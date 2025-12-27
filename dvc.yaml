@@ -1,0 +1,15 @@
+stages:
+  download-dataset:
+    cmd: uv run python -c "import urllib.request; 
+      urllib.request.urlretrieve('https://opendata.cern.ch/record/328/files/atlas-higgs-challenge-2014-v2.csv.gz',
+      'data/raw/higgs-challenge.csv.gz')"
+    outs:
+    - data/raw/higgs-challenge.csv.gz
+  preprocess:
+    cmd: uv run python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/
+    deps:
+    - data/raw/higgs-challenge.csv.gz
+    - src/data/preprocess.py
+    outs:
+    - data/processed/test.csv
+    - data/processed/train.csv

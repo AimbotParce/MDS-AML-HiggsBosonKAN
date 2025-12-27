@@ -1,0 +1,32 @@
+schema: '2.0'
+stages:
+  download-dataset:
+    cmd: uv run python -c "import urllib.request; 
+      urllib.request.urlretrieve('https://opendata.cern.ch/record/328/files/atlas-higgs-challenge-2014-v2.csv.gz',
+      'data/raw/higgs-challenge.csv.gz')"
+    outs:
+    - path: data/raw/higgs-challenge.csv.gz
+      hash: md5
+      md5: ae01726fcb46bddc5212cbda5806a180
+      size: 65630848
+  preprocess:
+    cmd: uv run python src/data/preprocess.py data/raw/higgs-challenge.csv.gz 
+      data/processed/
+    deps:
+    - path: data/raw/higgs-challenge.csv.gz
+      hash: md5
+      md5: ae01726fcb46bddc5212cbda5806a180
+      size: 65630848
+    - path: src/data/preprocess.py
+      hash: md5
+      md5: 7ce414edc57f3efa5a24e416d7c55ad0
+      size: 5075
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: 72e2b33a6c9a2ae17bf58d0f33c0aa88
+      size: 36864365
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 718b7b396ec6ed638c9c306e60bfcce3
+      size: 208560065
