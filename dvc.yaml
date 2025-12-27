@@ -6,10 +6,9 @@ stages:
     outs:
     - data/raw/higgs-challenge.csv.gz
   preprocess:
-    cmd: uv run python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/
+    cmd: uv run python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/higgs-challenge.parquet
     deps:
     - data/raw/higgs-challenge.csv.gz
     - src/data/preprocess.py
     outs:
-    - data/processed/test.csv
-    - data/processed/train.csv
+    - data/processed/higgs-challenge.parquet

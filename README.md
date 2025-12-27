@@ -8,6 +8,7 @@ This repository contains the following main components.
 - `models/`: This directory is used to cache trained models and related artifacts.
 - `plots/`: This directory is used to store generated plots and visualizations.
 - `results/`: This directory is used to store results from experiments, such as performance metrics and logs (More on this later).
+- `reports/`: This directory contains the project proposal and report document
 - **Project Files**: These are files such as `README.md`, `pyproject.toml`, and `uv.lock`, which define dependencies and provide project documentation.
 - **Data Version Control**: These are files related to DVC (Data Version Control) such as `dvc.yaml` and `.dvc/`. DVC is a tool that helps manage and version control large datasets and machine learning models, ensuring reproducibility and collaboration in data science projects.
 
@@ -67,5 +68,5 @@ At this point, you should be able to run Jupyter notebooks in the `notebooks/` d
 
 ## Report
 
-The project report can be found in the root directory as a PDF file named `HiggsBosonKAN.pdf`. In there, all the methodologies, experiments, results, and conclusions drawn from this project are detailed comprehensively.
+The project report can be found in the root directory as a PDF file named `reports/HiggsBosonKAN.pdf`. In there, all the methodologies, experiments, results, and conclusions drawn from this project are detailed comprehensively.
 

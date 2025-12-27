@@ -11,7 +11,7 @@ stages:
       size: 65630848
   preprocess:
     cmd: uv run python src/data/preprocess.py data/raw/higgs-challenge.csv.gz 
-      data/processed/
+      data/processed/higgs-challenge.parquet
     deps:
     - path: data/raw/higgs-challenge.csv.gz
       hash: md5
@@ -19,14 +19,10 @@ stages:
       size: 65630848
     - path: src/data/preprocess.py
       hash: md5
-      md5: 7ce414edc57f3efa5a24e416d7c55ad0
-      size: 5075
+      md5: 51824887dec0f890cb7fb8493f2678ef
+      size: 5166
     outs:
-    - path: data/processed/test.csv
+    - path: data/processed/higgs-challenge.parquet
       hash: md5
-      md5: 72e2b33a6c9a2ae17bf58d0f33c0aa88
-      size: 36864365
-    - path: data/processed/train.csv
-      hash: md5
-      md5: 718b7b396ec6ed638c9c306e60bfcce3
-      size: 208560065
+      md5: 8f20ed8c11723104d6d23f32d226b613
+      size: 39040122

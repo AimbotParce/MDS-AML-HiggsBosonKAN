@@ -26,17 +26,6 @@ def main(source: os.PathLike, destination: os.PathLike):
     df = df.drop(["KaggleSet", "KaggleWeight"], axis=1)
     df.replace(-999.0, np.nan, inplace=True)
 
-    # --- Train-test split with stratification ---
-    train_NB, test_NB = train_test_split(df, test_size=0.15, stratify=df["Label"], random_state=42)
-
-    # Join the split again for preprocess (flag train individuals in column is_train)
-    train_NB["is_train"] = 1
-    test_NB["is_train"] = 0
-
-    print(f"Train set shape: {train_NB.shape}, Test set shape: {test_NB.shape}")
-
-    df = pd.concat([train_NB, test_NB], ignore_index=True)
-
     # --- Handling missing values ---
 
     # Count number of missing values per column
@@ -93,15 +82,15 @@ def main(source: os.PathLike, destination: os.PathLike):
     # Select numeric features
     num_features = df.select_dtypes(include=[np.number]).columns.tolist()
 
-    # Exclude columns 'is_train', 'Weight', 'Label'
-    exclude_cols = ["is_train", "Weight", "Label"]
+    # Exclude columns 'Weight', 'Label'
+    exclude_cols = ["Weight", "Label"]
     num_features = [f for f in num_features if f not in exclude_cols]
 
     # Initialize scaler
     scaler = StandardScaler()
 
-    # Fit only on training data
-    scaler.fit(df.loc[df["is_train"] == 1, num_features])
+    # Fit on all data (since, for this study, we are not separating train/test here)
+    scaler.fit(df.loc[:, num_features])
 
     # Transform all data
     df[num_features] = scaler.transform(df[num_features])
@@ -114,14 +103,8 @@ def main(source: os.PathLike, destination: os.PathLike):
 
     # --- Save preprocessed data ---
 
-    # Split based on 'is_train' again
-    train_preprocess = df[df["is_train"] == 1].drop(columns=["is_train"])
-    test_preprocess = df[df["is_train"] == 0].drop(columns=["is_train"])
-    df = df.drop(columns=["is_train"])
-
-    # Save to CSV
-    train_preprocess.to_csv(os.path.join(destination, "train.csv"), index=False)
-    test_preprocess.to_csv(os.path.join(destination, "test.csv"), index=False)
+    # Save to PARQUET
+    df.to_parquet(destination, index=False)
 
     print("Preprocessed train and test sets saved without 'is_train' column.")
 
@@ -130,8 +113,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Data Preprocessing for Higgs Boson Dataset")
-    parser.add_argument("source", type=str, help="Path to the raw data file")
-    parser.add_argument("destination", type=str, help="Directory to save the preprocessed data files")
+    parser.add_argument("source", type=str, help="Path to the raw CSV.GZ data file")
+    parser.add_argument("destination", type=str, help="Path to the processed PARQUET data file")
     args = parser.parse_args()
 
     main(source=args.source, destination=args.destination)
