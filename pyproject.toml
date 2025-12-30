@@ -10,10 +10,12 @@ dependencies = [
     "ipykernel>=7.1.0",
     "ipywidgets>=8.1.8",
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.8",
     "pandas>=2.3.3",
     "pyarrow>=22.0.0",
     "pykan>=0.2.8",
     "scikit-learn>=1.8.0",
+    "seaborn>=0.13.2",
     "torch>=2.9.1",
 ]
 
