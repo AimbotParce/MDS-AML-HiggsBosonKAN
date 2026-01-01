@@ -240,7 +240,9 @@ if __name__ == "__main__":
 
     mlflow_pytorch.autolog(log_models=False)
     experiment = mlflow.set_experiment(args.experiment_name)
-    with mlflow.start_run(experiment_id=experiment.experiment_id):
+    with mlflow.start_run(
+        experiment_id=experiment.experiment_id, run_name=f"KAN-hidden{hidden_dim}-fold{cv_fold_index}/{cv_folds}"
+    ):
         mlflow.log_param("seed", seed)
         mlflow.log_param("hidden_dim", hidden_dim)
         mlflow.log_param("grid", grid)
@@ -248,7 +250,9 @@ if __name__ == "__main__":
         mlflow.log_param("cv_folds", cv_folds)
         mlflow.log_param("cv_fold_index", cv_fold_index)
 
-        dataset = prepare_dataset(data_path, cv_folds=5, cv_fold_index=0, random_state=seed, device=device)
+        dataset = prepare_dataset(
+            data_path, cv_folds=cv_folds, cv_fold_index=cv_fold_index, random_state=seed, device=device
+        )
         num_features = dataset.train_input.shape[1]
         mlflow.log_param("num_features", num_features)
 
