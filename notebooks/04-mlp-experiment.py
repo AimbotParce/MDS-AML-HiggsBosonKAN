@@ -9,7 +9,7 @@ from torch import nn
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from typing import List
+from typing import List, Optional
 
 from torch import nn
 
@@ -19,15 +19,22 @@ from src.trainers.mlp_trainer import fit_mlp
 
 
 class MLPClassifier(nn.Module):
-    def __init__(self, input_dim: int, hidden_dims: List[int], output_dim: int):
+    def __init__(self, input_dim: int, hidden_dims: List[int], output_dim: int, random_state: Optional[int] = None):
         super(MLPClassifier, self).__init__()
+        random_generator = torch.Generator()
+        if random_state is not None:
+            random_generator.manual_seed(random_state)
         layers = []
         prev_dim = input_dim
         for hidden_dim in hidden_dims:
-            layers.append(nn.Linear(prev_dim, hidden_dim))
+            layer = nn.Linear(prev_dim, hidden_dim)
+            nn.init.xavier_uniform_(layer.weight, gain=nn.init.calculate_gain("relu"), generator=random_generator)
+            layers.append(layer)
             layers.append(nn.ReLU())  # Using ReLU activation for hidden layers
             prev_dim = hidden_dim
-        layers.append(nn.Linear(prev_dim, output_dim))
+        output_layer = nn.Linear(prev_dim, output_dim)
+        nn.init.xavier_uniform_(output_layer.weight, gain=nn.init.calculate_gain("sigmoid"), generator=random_generator)
+        layers.append(output_layer)
         layers.append(nn.Sigmoid())
         self.network = nn.Sequential(*layers)
 
