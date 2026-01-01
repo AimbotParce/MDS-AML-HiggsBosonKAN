@@ -28,11 +28,14 @@ class MLPClassifier(nn.Module):
         prev_dim = input_dim
         for hidden_dim in hidden_dims:
             layer = nn.Linear(prev_dim, hidden_dim)
+            # According to ChatGPT, Xavier initialization is usually not preferred for ReLU activations,
+            # but for this toy example, we will use it.
             nn.init.xavier_uniform_(layer.weight, gain=nn.init.calculate_gain("relu"), generator=random_generator)
             layers.append(layer)
             layers.append(nn.ReLU())  # Using ReLU activation for hidden layers
             prev_dim = hidden_dim
         output_layer = nn.Linear(prev_dim, output_dim)
+        # For sigmoid output, Xavier initialization is appropriate
         nn.init.xavier_uniform_(output_layer.weight, gain=nn.init.calculate_gain("sigmoid"), generator=random_generator)
         layers.append(output_layer)
         layers.append(nn.Sigmoid())
