@@ -45,7 +45,9 @@ if __name__ == "__main__":
     data_path: str = args.data_path
     cv_folds: int = args.cv_folds
     cv_fold_index: int = args.cv_fold_index
-    lr = args.learning_rate
+    lr: float = args.learning_rate
+    lamb: float = 0.001
+    lambda_entropy: float = 5.0
 
     if not (cv_folds > 1):
         parser.error("cv-folds must be greater than 1")
@@ -64,6 +66,8 @@ if __name__ == "__main__":
         mlflow.log_param("cv_folds", cv_folds)
         mlflow.log_param("cv_fold_index", cv_fold_index)
         mlflow.log_param("learning_rate", lr)
+        mlflow.log_param("lamb", lamb)
+        mlflow.log_param("lambda_entropy", lambda_entropy)
 
         dataset = prepare_dataset_cv(
             data_path, cv_folds=cv_folds, cv_fold_index=cv_fold_index, random_state=seed, device=device
@@ -85,7 +89,7 @@ if __name__ == "__main__":
             batch_size=batch_size,
             optimizer=torch.optim.Adam(model.parameters(), lr=lr),
             loss_fn=nn.BCELoss(),
-            lamb=0.001,
-            lamb_entropy=5.0,
+            lamb=lamb,
+            lamb_entropy=lambda_entropy,
             metrics=(Accuracy(),),
         )
