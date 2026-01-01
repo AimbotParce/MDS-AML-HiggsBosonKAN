@@ -90,4 +90,5 @@ if __name__ == "__main__":
             lamb=lamb,
             lamb_entropy=lambda_entropy,
             metrics=(Accuracy(),),
+            random_state=seed,
         )

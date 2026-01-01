@@ -98,4 +98,5 @@ if __name__ == "__main__":
             loss_fn=nn.BCELoss(),
             l1_reg=l1_reg,
             metrics=(Accuracy(),),
+            random_state=seed,
         )
