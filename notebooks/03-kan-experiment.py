@@ -30,26 +30,35 @@ class Dataset:
 
 
 def prepare_dataset(
-    data_path: str, val_size: float = 0.2, random_state: int = 42, device: torch.device = torch.device("cpu")
+    data_path: str,
+    cv_folds: int = 5,
+    cv_fold_index: int = 0,
+    random_state: int = 42,
+    device: torch.device = torch.device("cpu"),
 ):
     df = pd.read_parquet(data_path)
 
-    train_df, val_df = train_test_split(df, test_size=val_size, random_state=random_state, stratify=df["Label"])
+    X = torch.tensor(df.drop(columns=["Label", "Weight"]).values, dtype=torch.float32)
+    y = torch.tensor(df["Label"].values, dtype=torch.float32)
+    w = torch.tensor(df["Weight"].values, dtype=torch.float32)
 
-    y_train = train_df["Label"].values
-    w_train = train_df["Weight"].values
-    X_val = val_df.drop(columns=["Label", "Weight"]).values
-    y_val = val_df["Label"].values
-    w_val = val_df["Weight"].values
+    permutation = torch.randperm(X.shape[0], generator=torch.Generator().manual_seed(random_state))
+    folds = torch.chunk(permutation, cv_folds)
+
+    val_indices = folds[cv_fold_index]
+    train_indices = torch.cat([folds[i] for i in range(cv_folds) if i != cv_fold_index])
+
+    X_train, y_train, w_train = X[train_indices], y[train_indices], w[train_indices]
+    X_val, y_val, w_val = X[val_indices], y[val_indices], w[val_indices]
 
     # Encoding label as float, but we'll use binary cross-entropy loss regardless
     dataset = Dataset(
-        train_input=torch.tensor(train_df.drop(columns=["Label", "Weight"]).values, dtype=torch.float32).to(device),
-        train_label=torch.tensor(y_train.reshape(-1, 1), dtype=torch.float32).to(device),
-        train_weight=torch.tensor(w_train.reshape(-1, 1), dtype=torch.float32).to(device),
-        val_input=torch.tensor(X_val, dtype=torch.float32).to(device),
-        val_label=torch.tensor(y_val.reshape(-1, 1), dtype=torch.float32).to(device),
-        val_weight=torch.tensor(w_val.reshape(-1, 1), dtype=torch.float32).to(device),
+        train_input=X_train.to(device),
+        train_label=y_train.reshape(-1, 1).to(device),
+        train_weight=w_train.reshape(-1, 1).to(device),
+        val_input=X_val.to(device),
+        val_label=y_val.reshape(-1, 1).to(device),
+        val_weight=w_val.reshape(-1, 1).to(device),
     )
     return dataset
 
@@ -93,6 +102,7 @@ def fit_kan(
     singularity_avoiding: bool = False,
     y_th: float = 1000.0,
     reg_metric: str = "edge_forward_spline_n",
+    random_state: Optional[int] = None,
 ):
     """
     Custom fit function for a KAN, inspired by the pykan library and modified to log metrics to mlflow, and to not
@@ -111,8 +121,14 @@ def fit_kan(
     mlflow.log_param("singularity_avoiding", singularity_avoiding)
     mlflow.log_param("y_th", y_th)
     mlflow.log_param("reg_metric", reg_metric)
+    mlflow.log_param("metrics", [metric.name for metric in metrics])
+    mlflow.log_param("random_state", random_state)
 
     old_save_act, old_symbolic_enabled = model.disable_symbolic_in_fit(lamb)
+
+    random_generator = torch.Generator()
+    if random_state is not None:
+        random_generator.manual_seed(random_state)
 
     history = History(val_metrics={metric.name: [] for metric in metrics})
 
@@ -123,7 +139,7 @@ def fit_kan(
 
     for epoch in range(1, epochs + 1):
         if shuffle:
-            permutation = torch.randperm(dataset.train_input.size()[0])
+            permutation = torch.randperm(dataset.train_input.size()[0], generator=random_generator)
         else:
             permutation = torch.arange(dataset.train_input.size()[0])
 
@@ -195,32 +211,44 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=32768)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--learning-rate", type=float, default=0.001)
+    parser.add_argument("--cv-folds", type=int, default=5)
+    parser.add_argument("--cv-fold-index", type=int, default=0)
     parser.add_argument("--hidden-dim", type=int, default=100)
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dataset = prepare_dataset(args.data_path, val_size=0.2, random_state=42, device=device)
-    num_features = dataset.train_input.shape[1]
 
-    print("Dataset prepared.")
-    print(f"Train samples: {dataset.train_input.shape[0]}, Validation samples: {dataset.val_input.shape[0]}")
-    print(f"Number of features: {num_features}")
+    epochs: int = args.epochs
+    batch_size: int = args.batch_size
+    seed: int = 42
+    hidden_dim: int = args.hidden_dim
+    grid: int = 3
+    k: int = 3
+    data_path: str = args.data_path
+    cv_folds: int = args.cv_folds
+    cv_fold_index: int = args.cv_fold_index
 
-    epochs = args.epochs
-    batch_size = args.batch_size
-    seed = 42
-    hidden_dim = args.hidden_dim
-    grid = 3
-    k = 3
+    if not (cv_folds > 1):
+        parser.error("cv-folds must be greater than 1")
+    if not (0 <= cv_fold_index < cv_folds):
+        parser.error("cv-fold-index must be in the range [0, cv-folds)")
 
     mlflow_pytorch.autolog(log_models=False)
     experiment = mlflow.set_experiment(args.experiment_name)
     with mlflow.start_run(experiment_id=experiment.experiment_id):
         mlflow.log_param("seed", seed)
-        mlflow.log_param("num_features", num_features)
         mlflow.log_param("hidden_dim", hidden_dim)
         mlflow.log_param("grid", grid)
         mlflow.log_param("k", k)
+
+        dataset = prepare_dataset(data_path, cv_folds=5, cv_fold_index=0, random_state=seed, device=device)
+        num_features = dataset.train_input.shape[1]
+        mlflow.log_param("num_features", num_features)
+
+        print("Dataset prepared.")
+        print(f"Train samples: {dataset.train_input.shape[0]}, Validation samples: {dataset.val_input.shape[0]}")
+        print(f"Number of features: {num_features}")
+
         model = KANClassifier(width=[num_features, hidden_dim, 1], grid=grid, k=k, seed=seed, auto_save=False).to(
             device
         )
