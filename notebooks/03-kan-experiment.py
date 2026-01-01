@@ -240,6 +240,8 @@ if __name__ == "__main__":
         mlflow.log_param("hidden_dim", hidden_dim)
         mlflow.log_param("grid", grid)
         mlflow.log_param("k", k)
+        mlflow.log_param("cv_folds", cv_folds)
+        mlflow.log_param("cv_fold_index", cv_fold_index)
 
         dataset = prepare_dataset(data_path, cv_folds=5, cv_fold_index=0, random_state=seed, device=device)
         num_features = dataset.train_input.shape[1]
