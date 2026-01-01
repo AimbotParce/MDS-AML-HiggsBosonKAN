@@ -197,6 +197,11 @@ def fit_kan(
             history.val_metrics[metric.name].append(avg_metric)
             mlflow.log_metric(f"val_{metric.name}_epoch", avg_metric, step=epoch)
 
+        print(
+            f"Epoch {epoch}/{epochs} - Train Loss: {avg_train_loss:.4f} - Val Loss: {avg_val_loss:.4f} - "
+            + " - ".join([f"Val {metric.name}: {history.val_metrics[metric.name][-1]:.4f}" for metric in metrics])
+        )
+
     # revert back to original state
     model.symbolic_enabled = old_symbolic_enabled
     return history
