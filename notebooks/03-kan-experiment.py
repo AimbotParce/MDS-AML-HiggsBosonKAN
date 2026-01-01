@@ -66,8 +66,6 @@ if __name__ == "__main__":
         mlflow.log_param("cv_folds", cv_folds)
         mlflow.log_param("cv_fold_index", cv_fold_index)
         mlflow.log_param("learning_rate", lr)
-        mlflow.log_param("lamb", lamb)
-        mlflow.log_param("lambda_entropy", lambda_entropy)
 
         dataset = prepare_dataset_cv(
             data_path, cv_folds=cv_folds, cv_fold_index=cv_fold_index, random_state=seed, device=device
