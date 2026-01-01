@@ -70,7 +70,7 @@ if __name__ == "__main__":
     mlflow_pytorch.autolog(log_models=False)
     experiment = mlflow.set_experiment(args.experiment_name)
     with mlflow.start_run(
-        experiment_id=experiment.experiment_id, run_name=f"KAN-hidden{hidden_dim}-fold{cv_fold_index}/{cv_folds}"
+        experiment_id=experiment.experiment_id, run_name=f"MLP-hidden{hidden_dim}-fold{cv_fold_index}/{cv_folds}"
     ):
         mlflow.log_param("seed", seed)
         mlflow.log_param("hidden_dim", hidden_dim)
