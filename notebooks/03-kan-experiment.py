@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment-name", type=str, default="KAN Higgs Experiment")
+    parser.add_argument("--mlflow-tracking-uri", type=str, default=None)
     parser.add_argument("--data-path", type=str, default="data/processed/higgs-challenge.parquet")
     parser.add_argument("--batch-size", type=int, default=32768)
     parser.add_argument("--epochs", type=int, default=20)
@@ -35,6 +36,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    if args.mlflow_tracking_uri is not None:
+        mlflow.set_tracking_uri(args.mlflow_tracking_uri)
 
     epochs: int = args.epochs
     batch_size: int = args.batch_size
