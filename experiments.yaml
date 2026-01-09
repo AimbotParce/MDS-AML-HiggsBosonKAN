@@ -1,0 +1,24 @@
+$cartesian:
+  - $union:
+    - executable: python notebooks/03-kan-experiment.py
+    - executable: python notebooks/04-mlp-experiment.py
+  - argument: --cv-folds 5
+  - $union:
+    - argument: --cv-fold-index 0
+    - argument: --cv-fold-index 1
+    - argument: --cv-fold-index 2
+    - argument: --cv-fold-index 3
+    - argument: --cv-fold-index 4
+  - argument: --epochs 30
+  - $union:
+    - argument: --hidden-dim 2
+    - argument: --hidden-dim 4
+    - argument: --hidden-dim 8
+    - argument: --hidden-dim 16
+    - argument: --hidden-dim 32
+    - argument: --hidden-dim 64
+    - argument: --hidden-dim 128
+    - argument: --hidden-dim 256
+    - argument: --hidden-dim 512
+  
+
