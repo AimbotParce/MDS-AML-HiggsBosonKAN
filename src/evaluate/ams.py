@@ -25,10 +25,15 @@ def ams_score(y_true: torch.Tensor, y_pred: torch.Tensor, weights: torch.Tensor,
     y_pred = torch.tensor(y_pred)
     weights = torch.tensor(weights)
 
-    s = torch.sum(weights[(y_true == 1) & (y_pred == 1)])
-    b = torch.sum(weights[(y_true == 0) & (y_pred == 1)])
+    tp = torch.sum(weights[(y_true == 1) & (y_pred == 1)])
+    fn = torch.sum(weights[(y_true == 1) & (y_pred == 0)])
+    fp = torch.sum(weights[(y_true == 0) & (y_pred == 1)])
+    tn = torch.sum(weights[(y_true == 0) & (y_pred == 0)])
 
-    if b + br <= 0:
+    tpr = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
+
+    if fpr + br <= 0:
         return 0.0
-    rad = 2 * ((s + b + br) * torch.log(1.0 + s / (b + br)) - s)
+    rad = 2 * ((tpr + fpr + br) * torch.log(1.0 + tpr / (fpr + br)) - tpr)
     return torch.sqrt(rad).item() if rad > 0 else 0.0
