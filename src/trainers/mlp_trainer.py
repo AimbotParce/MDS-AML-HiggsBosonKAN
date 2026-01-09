@@ -84,17 +84,19 @@ def fit_mlp(
         val_count = 0
         metric_sums = {metric.name: 0.0 for metric in metrics}
         for i in val_bar:
-            batch_x, batch_y = (
+            batch_x, batch_y, batch_w = (
                 dataset.val_input[i : i + batch_size],
                 dataset.val_label[i : i + batch_size],
+                dataset.val_weight[i : i + batch_size],
             )
+
             preds = model(batch_x)
             val_loss = loss_fn(preds, batch_y)
             val_loss_sum += val_loss.item() * batch_x.size(0)
             val_count += batch_x.size(0)
             bar_postfix = {"val_loss": val_loss.item()}
             for metric in metrics:
-                metric_value = metric(preds, batch_y)
+                metric_value = metric(preds, batch_y, X=batch_x, w=batch_w)
                 metric_sums[metric.name] += metric_value * batch_x.size(0)
                 bar_postfix[metric.name] = metric_sums[metric.name] / val_count
             val_bar.set_postfix(bar_postfix)

@@ -10,7 +10,7 @@ from torch import nn
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.datasets import prepare_dataset_cv
-from src.trainers import Accuracy
+from src.trainers import AMS, AUC, Accuracy
 from src.trainers.kan_trainer import fit_kan
 
 
@@ -93,6 +93,6 @@ if __name__ == "__main__":
             loss_fn=nn.BCELoss(),
             lamb=lamb,
             lamb_entropy=lambda_entropy,
-            metrics=(Accuracy(),),
+            metrics=(Accuracy(), AUC(), AMS()),
             random_state=seed,
         )

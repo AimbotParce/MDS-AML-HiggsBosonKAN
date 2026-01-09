@@ -21,10 +21,6 @@ def ams_score(y_true: torch.Tensor, y_pred: torch.Tensor, weights: torch.Tensor,
     ams : float
         The AMS metric value.
     """
-    y_true = torch.tensor(y_true)
-    y_pred = torch.tensor(y_pred)
-    weights = torch.tensor(weights)
-
     tp = torch.sum(weights[(y_true == 1) & (y_pred == 1)])
     fn = torch.sum(weights[(y_true == 1) & (y_pred == 0)])
     fp = torch.sum(weights[(y_true == 0) & (y_pred == 1)])

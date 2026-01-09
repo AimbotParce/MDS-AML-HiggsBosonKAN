@@ -14,7 +14,7 @@ from typing import List, Optional
 from torch import nn
 
 from src.datasets import prepare_dataset_cv
-from src.trainers import Accuracy
+from src.trainers import AMS, AUC, Accuracy
 from src.trainers.mlp_trainer import fit_mlp
 
 
@@ -111,6 +111,6 @@ if __name__ == "__main__":
             optimizer=torch.optim.Adam(model.parameters(), lr=lr),
             loss_fn=nn.BCELoss(),
             l1_reg=l1_reg,
-            metrics=(Accuracy(),),
+            metrics=(Accuracy(), AUC(), AMS()),
             random_state=seed,
         )
