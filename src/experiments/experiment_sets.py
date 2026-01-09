@@ -1,24 +1,20 @@
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import yaml
 from pydantic import BaseModel, Field, model_validator
 
 
 class ConfigUnion(BaseModel):
-    union: "List[ConfigUnion | ConfigCartesian | ExperimentPart]"
+    union: "Sequence[ConfigUnion | ConfigCartesian | ExperimentPart]"
 
 
 class ConfigCartesian(BaseModel):
-    cartesian: "List[ConfigUnion | ConfigCartesian | ExperimentPart]"
+    cartesian: "Sequence[ConfigUnion | ConfigCartesian | ExperimentPart]"
 
 
 class ExperimentPart(BaseModel):
-    argument: Optional[str] = Field(
-        None, description="Argument string.", examples=["--config-path configs/experiment1.yaml"]
-    )
-    executable: Optional[str] = Field(
-        None, description="Experiment executable.", examples=["python src/experiments/run_experiment.py"]
-    )
+    argument: Optional[str] = None
+    executable: Optional[str] = None
 
     @model_validator(mode="before")
     def check_argument_or_executable_provided(cls, values: Dict[str, Any]) -> Dict[str, Any]:
@@ -125,8 +121,9 @@ def parse_experiment_config(experiment_config: Dict | Any) -> ConfigUnion | Conf
         ), "The top-level object in an experiment configuration must be a $union or a $cartesian object."
         return res
     else:
-        raise ValueError(
-            "The top-level object in an experiment configuration must be a dict with either a $union or a $cartesian key."
+        raise TypeError(
+            "The top-level object in an experiment configuration must be a dict "
+            f"with either a $union or a $cartesian key. Found type: {type(experiment_config)}"
         )
 
 
