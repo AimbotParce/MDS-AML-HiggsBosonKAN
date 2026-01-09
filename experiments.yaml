@@ -9,16 +9,34 @@ $cartesian:
     - argument: --cv-fold-index 2
     - argument: --cv-fold-index 3
     - argument: --cv-fold-index 4
-  - argument: --epochs 30
   - $union:
-    - argument: --hidden-dim 2
-    - argument: --hidden-dim 4
-    - argument: --hidden-dim 8
-    - argument: --hidden-dim 16
-    - argument: --hidden-dim 32
-    - argument: --hidden-dim 64
-    - argument: --hidden-dim 128
-    - argument: --hidden-dim 256
-    - argument: --hidden-dim 512
-  
+    - $cartesian:
+      - argument: --epochs 80
+      - $union:
+        - argument: --hidden-dim 1
+        - argument: --hidden-dim 2
+        - argument: --hidden-dim 3
+        - argument: --hidden-dim 4
+        - argument: --hidden-dim 6
+        - argument: --hidden-dim 8
+    - $cartesian:
+      - argument: --epochs 50
+      - $union:
+        - argument: --hidden-dim 12
+        - argument: --hidden-dim 16
+        - argument: --hidden-dim 24
+        - argument: --hidden-dim 32
+        - argument: --hidden-dim 48
+        - argument: --hidden-dim 64
+        - argument: --hidden-dim 96
+        - argument: --hidden-dim 128
+    - $cartesian:
+      - argument: --epochs 30
+      - $union:
+        - argument: --hidden-dim 192
+        - argument: --hidden-dim 256
+        - argument: --hidden-dim 384
+        - argument: --hidden-dim 512
+        - argument: --hidden-dim 768
+        - argument: --hidden-dim 1024
 
