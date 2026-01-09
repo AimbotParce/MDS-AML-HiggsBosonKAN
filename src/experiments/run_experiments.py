@@ -102,10 +102,12 @@ if __name__ == "__main__":
     )
     args, extra_args = parser.parse_known_args()
 
+    j = -1
     for j, extra_arg in enumerate(extra_args):
         if extra_arg == "--":
             break
         parser.error(f"Unknown argument: {extra_arg}")
+
     extra_args = extra_args[j + 1 :]
 
     experiment_set = load_experiment_set(args.experiments_config)
