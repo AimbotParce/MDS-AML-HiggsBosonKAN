@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import pickle
 import subprocess
@@ -6,6 +7,8 @@ import sys
 from typing import List, Set
 
 from .experiment_sets import Experiment, load_experiment_set
+
+logger = logging.getLogger(__name__)
 
 
 class ExperimentRunner:
@@ -26,19 +29,21 @@ class ExperimentRunner:
         os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
 
     def _run_command(self, cmd: List[str]):
-        print(f"Running command: {' '.join(cmd)}")
+        logger.info(f"Running command: {' '.join(cmd)}")
         env = os.environ.copy()
         env["PYTHONUTF8"] = "1"  # Because MLflow prints uncode characters and Windows is dumb
         result = subprocess.run(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", env=env
         )
         if result.returncode != 0:
-            print(f"Command failed with return code {result.returncode}")
-            print(f"Stdout: {result.stdout}")
-            print(f"Stderr: {result.stderr}")
+            logger.error(f"Command failed with return code {result.returncode}")
+            logger.debug(f"Stdout: {result.stdout}")
+            logger.debug(f"Stderr: {result.stderr}")
             raise RuntimeError(f"Experiment command failed: {' '.join(cmd)}")
         else:
-            print(f"Command succeeded. Output:\n{result.stdout}")
+            logger.info(f"Command succeeded")
+            logger.debug(f"Stdout: {result.stdout}")
+            logger.debug(f"Stderr: {result.stderr}")
 
     def run_all(self):
         # Load cache
@@ -53,7 +58,7 @@ class ExperimentRunner:
             exp_id = hashlib.md5((experiment.executable + " ".join(sorted(experiment.arguments))).encode()).hexdigest()
 
             if exp_id in cache:
-                print(f"Skipping cached experiment: {experiment.executable} with args {experiment.arguments}")
+                logger.info(f"Skipping cached experiment: {experiment.executable} with args {experiment.arguments}")
                 continue
             executable = experiment.executable
             if not self.no_python_executable_substitution and executable.startswith("python "):
@@ -100,6 +105,13 @@ if __name__ == "__main__":
         action="store_true",
         help="If set, do not substitute 'python' executable in experiment commands.",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase the verbosity of logging output (-v for print experiment outputs, -vv for DEBUG).",
+    )
     args, extra_args = parser.parse_known_args()
 
     j = -1
@@ -109,6 +121,11 @@ if __name__ == "__main__":
         parser.error(f"Unknown argument: {extra_arg}")
 
     extra_args = extra_args[j + 1 :]
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose >= 2 else logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+    )
 
     experiment_set = load_experiment_set(args.experiments_config)
     runner = ExperimentRunner(
