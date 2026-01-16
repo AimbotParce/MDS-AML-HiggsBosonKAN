@@ -60,7 +60,7 @@ project.
 > ```
 > And then running the data preprocessing script:
 > ```bash
-> python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/
+> python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/higgs-challenge.parquet
 > ```
 
 ## Jupyter Notebooks and scripts
