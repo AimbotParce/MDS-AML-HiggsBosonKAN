@@ -5,12 +5,15 @@ This repository contains the following main components.
 - `notebooks/`: This directory contains Jupyter notebooks used for data exploration, preprocessing, and model development.
 - `src/`: This directory holds the source code for some helper modules developed during the project. It mainly contains three things:
   - `data/`: Functions for data loading and preprocessing.
-- `models/`: This directory is used to cache trained models and related artifacts.
-- `plots/`: This directory is used to store generated plots and visualizations.
-- `results/`: This directory is used to store results from experiments, such as performance metrics and logs (More on this later).
+  - `experiments/`: Module to compile and run experiment sets.
+  - `trainers/`: Implementations of custom, analogous trainers (in torch) for MLPs and KANs.
+  - ... Other utility functions.
+- `figures/`: This directory is used to store generated plots and visualizations.
 - `reports/`: This directory contains the project proposal and report document
 - **Project Files**: These are files such as `README.md`, `pyproject.toml`, and `uv.lock`, which define dependencies and provide project documentation.
 - **Data Version Control**: These are files related to DVC (Data Version Control) such as `dvc.yaml` and `.dvc/`. DVC is a tool that helps manage and version control large datasets and machine learning models, ensuring reproducibility and collaboration in data science projects.
+
+Finally, the experiment results are stored in a common MLflow tracking server hosted at `http://mlflow.parcerisa.xyz/`. If you wish to explore the results, please contact the repository owner for access credentials.
 
 ## Installation
 
@@ -60,11 +63,15 @@ project.
 > python src/data/preprocess.py data/raw/higgs-challenge.csv.gz data/processed/
 > ```
 
-## Jupyter Notebooks
+## Jupyter Notebooks and scripts
 
 At this point, you should be able to run Jupyter notebooks in the `notebooks/` directory. You can execute them in order, as they have been named to reflect the intended sequence of execution:
 
-> TO DO
+1. `01-test-pykan.ipynb`: Initial tests and experiments with the PyKAN library.
+2. `02-pykan-higgs-test.ipynb`: Testing PyKAN on the Higgs Boson dataset.
+3. `03-kan-experiment.py`: Script to run KAN experiments.
+4. `04-mlp-experiment.py`: Script to run MLP experiments.
+5. `05-analysis.ipynb`: Analysis of the results obtained from the experiments, it connects to the MLflow server to fetch results, so make sure you have access to it.
 
 ## Report
 
